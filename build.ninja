@@ -1,0 +1,11 @@
+SRC_NINJA = src.ninja
+TOOLCHAIN_DIR = clang-toolchain
+INCLUDES = -I inc -I ext/xz-embedded/linux/include/linux -I ext/xz-embedded/userspace -D XZ_USE_CRC64
+
+include clang-toolchain/host-cc.ninja
+subninja clang-toolchain/target-cc-debug.ninja
+
+include clang-toolchain/target-cc-release.ninja
+default cc-debug cc-release
+
+build check: phony cc-debug/check cc-release/check

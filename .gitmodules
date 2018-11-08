@@ -1,0 +1,12 @@
+[submodule "ext/BearSSL"]
+	path = ext/BearSSL
+	url = https://www.bearssl.org/git/BearSSL
+[submodule "ext/xz-embedded"]
+	path = ext/xz-embedded
+	url = http://git.tukaani.org/xz-embedded.git
+[submodule "ext/zlib"]
+	path = ext/zlib
+	url = https://github.com/madler/zlib.git
+[submodule "clang-toolchain"]
+	path = clang-toolchain
+	url = https://github.com/jmckaskill/clang-toolchain.git
