@@ -8,4 +8,4 @@ subninja clang-toolchain/target-cc-debug.ninja
 include clang-toolchain/target-cc-release.ninja
 default cc-debug cc-release
 
-build check: phony cc-debug/check cc-release/check
+build check: phony check-cc-debug check-cc-release

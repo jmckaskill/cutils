@@ -1,65 +1,8 @@
+CUTILS_DIR = .
+subninja cutils.ninja
+
 obj = bin/obj/$TGT
 bin = bin/$TGT
-
-rule run-test
- command = $in -o $out
- description = TEST $in -o $out
-
-build $obj/hash_test.o: cc src/hash_test.c
-build $bin/test_hash.exe: clink $obj/hash_test.o $obj/cutils.lib
-build $bin/test_hash.log: run-test $bin/test_hash.exe
-
-build $obj/rbtree_test.o: cc src/rbtree_test.c
-build $bin/test_rbtree.exe: clink $obj/rbtree_test.o $obj/cutils.lib
-build $bin/test_rbtree.log: run-test $bin/test_rbtree.exe
-
-build $obj/heap_test.o: cc src/heap_test.c
-build $bin/test_heap.exe: clink $obj/heap_test.o $obj/cutils.lib
-build $bin/test_heap.log: run-test $bin/test_heap.exe
-
-build $obj/flag_test.o: cc src/flag_test.c
-build $bin/test_flag.exe: clink $obj/flag_test.o $obj/cutils.lib
-build $bin/test_flag.log: run-test $bin/test_flag.exe
-
-build $obj/str_test.o: cc src/str_test.c
-build $bin/test_str.exe: clink $obj/str_test.o $obj/cutils.lib
-build $bin/test_str.log: run-test $bin/test_str.exe
-
-build $obj/test_test.o: cc src/test_test.c
-build $bin/test_test.exe: clink $obj/test_test.o $obj/cutils.lib
-build $bin/test_test.log: run-test $bin/test_test.exe
-
-build $obj/socket.o: cc src/socket.c
-build $obj/timer.o: cc src/timer.c
-build $obj/mapped-file_win.o: cc src/mapped-file_win.c
-build $obj/mapped-file_posix.o: cc src/mapped-file_posix.c
-build $obj/file.o: cc src/file.c
-build $obj/zip-writer.o: cc src/zip-writer.c
-build $obj/mersenne-twister.o: cc src/rand/mersenne-twister.c
-build $obj/str.o: cc src/str.c
-build $obj/flag.o: cc src/flag.c
-build $obj/test.o: cc src/test.c
-build $obj/rbtree.o: cc src/rbtree.c
-build $obj/heap.o: cc src/heap.c
-build $obj/vector.o: cc src/vector.c
-build $obj/hash.o: cc src/hash.c
-build $obj/utf.o: cc src/utf.c
-build $obj/cutils.lib: lib $
- $obj/socket.o $
- $obj/timer.o $
- $obj/mapped-file_win.o $
- $obj/mapped-file_posix.o $
- $obj/file.o $
- $obj/zip-writer.o $
- $obj/mersenne-twister.o $
- $obj/str.o $
- $obj/flag.o $
- $obj/test.o $
- $obj/rbtree.o $
- $obj/vector.o $
- $obj/heap.o $
- $obj/hash.o $
- $obj/utf.o $
 
 build $obj/xz/xz_crc32.o: extcc ext/xz-embedded/linux/lib/xz/xz_crc32.c
 build $obj/xz/xz_crc64.o: extcc ext/xz-embedded/linux/lib/xz/xz_crc64.c
@@ -122,7 +65,7 @@ build $TGT: phony $
  $bin/test_str.exe $
  $bin/test_test.exe $
 
-build $TGT/check: phony $
+build check-$TGT: phony $
  $bin/test_flag.log $
  $bin/test_hash.log $
  $bin/test_heap.log $
