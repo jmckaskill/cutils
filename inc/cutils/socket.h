@@ -38,6 +38,11 @@ static inline int set_non_blocking(int fd) {
 #endif
 }
 
+static inline int set_ipv6_only(int fd, bool v6only) {
+	unsigned long val = v6only;
+	return setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&val, sizeof(val));
+}
+
 struct sockaddr_string {
 	struct {
 		size_t len;
@@ -45,7 +50,7 @@ struct sockaddr_string {
 	} host;
 	struct {
 		size_t len;
-		char c_str[8];
+		char c_str[10];
 	} port;
 };
 
@@ -53,6 +58,6 @@ int must_open_server_socket(int socktype, const char *host, int port);
 int open_server_socket(int socktype, const char *host, int port);
 int open_client_socket(int socktype, const char *host, int port);
 
-int print_sockaddr(const struct sockaddr *sa, int sasz, struct sockaddr_string *s);
+int print_sockaddr(struct sockaddr_string *s, const struct sockaddr *sa, int sasz);
 
 

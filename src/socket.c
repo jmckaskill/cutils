@@ -33,12 +33,11 @@ int open_server_socket(int socktype, const char *host, int port) {
 		}
 #ifdef WIN32
 		if (rp->ai_family == AF_INET6) {
-			DWORD not_v6only = 0;
-			setsockopt(sfd, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&not_v6only, sizeof(not_v6only));
+			set_ipv6_only(sfd, false);
 		}
 #endif
 		unsigned long reuse = 1;
-		if (port && !setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, (char*)&reuse, sizeof(reuse))) {
+		if (port && setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, (char*)&reuse, sizeof(reuse))) {
 			goto err;
 		}
 		if (bind(sfd, rp->ai_addr, (int)rp->ai_addrlen)) {
@@ -106,7 +105,7 @@ int open_client_socket(int socktype, const char *host, int port) {
 	return rp ? fd : -1;
 }
 
-int print_sockaddr(const struct sockaddr *sa, int sasz, struct sockaddr_string *s) {
+int print_sockaddr(struct sockaddr_string *s, const struct sockaddr *sa, int sasz) {
 	if (getnameinfo(sa, sasz, s->host.c_str, sizeof(s->host.c_str), s->port.c_str, sizeof(s->port.c_str), NI_NUMERICHOST | NI_NUMERICSERV)) {
 		ca_setlen(&s->host, 0);
 		ca_setlen(&s->port, 0);

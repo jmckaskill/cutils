@@ -24,5 +24,5 @@ struct logger {
 #define container_of(ptr, type, member) ((type*) ((char*) (ptr) - offsetof(type, member)))
 #endif
 
-log_t stderr_log;
-log_t stdout_log;
+extern log_t stderr_log;
+extern log_t stdout_log;

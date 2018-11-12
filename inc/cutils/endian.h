@@ -214,6 +214,11 @@ static inline uint16_t big_16(const uint8_t *p) {
     return ((uint16_t) p[0] << 8)
          | ((uint16_t) p[1]);
 }
+static inline uint16_t big_24(const uint8_t *p) {
+	return ((uint32_t)p[0] << 16)
+		| ((uint32_t)p[1] << 8)
+		| ((uint32_t)p[2]);
+}
 static inline uint32_t big_32(const uint8_t *p) {
     return ((uint32_t) p[0] << 24)
          | ((uint32_t) p[1] << 16)
