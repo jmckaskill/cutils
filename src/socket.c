@@ -1,9 +1,10 @@
 #include "cutils/socket.h"
+#include "cutils/char-array.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int open_server_socket(const char *host, int port) {
+int open_server_socket(int socktype, const char *host, int port) {
 #ifdef WIN32
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
@@ -14,13 +15,13 @@ int open_server_socket(const char *host, int port) {
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
-	hints.ai_socktype = SOCK_STREAM; /* TCP socket */
+	hints.ai_socktype = socktype;
 	hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
 
 	char ports[32];
 	sprintf(ports, "%d", port);
 
-	int err = getaddrinfo(host, ports, &hints, &result);
+	int err = getaddrinfo(host, port ? ports : NULL, &hints, &result);
 	if (err) {
 		return -1;
 	}
@@ -31,15 +32,23 @@ int open_server_socket(const char *host, int port) {
 			continue;
 		}
 #ifdef WIN32
-		DWORD not_v6only = 0;
-		setsockopt(sfd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &not_v6only, sizeof(not_v6only));
+		if (rp->ai_family == AF_INET6) {
+			DWORD not_v6only = 0;
+			setsockopt(sfd, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&not_v6only, sizeof(not_v6only));
+		}
 #endif
 		unsigned long reuse = 1;
-		if (!setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, (char*) &reuse, sizeof(reuse))
-		&& !bind(sfd, rp->ai_addr, (int)rp->ai_addrlen)
-		&& !listen(sfd, SOMAXCONN)) {
-			break;                  /* Success */
+		if (port && !setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, (char*)&reuse, sizeof(reuse))) {
+			goto err;
 		}
+		if (bind(sfd, rp->ai_addr, (int)rp->ai_addrlen)) {
+			goto err;
+		}
+		if (socktype == SOCK_STREAM && listen(sfd, SOMAXCONN)) {
+			goto err;
+		}
+		break;
+	err:
 		closesocket(sfd);
 	}
 
@@ -51,8 +60,8 @@ int open_server_socket(const char *host, int port) {
 	return sfd;
 }
 
-int must_open_server_socket(const char *host, int port) {
-	int fd = open_server_socket(host, port);
+int must_open_server_socket(int socktype, const char *host, int port) {
+	int fd = open_server_socket(socktype, host, port);
 	if (fd < 0) {
 		fprintf(stderr, "failed to bind server port %s:%d\n", host ? host : "", port);
 		exit(2);
@@ -60,7 +69,7 @@ int must_open_server_socket(const char *host, int port) {
 	return fd;
 }
 
-int open_client_socket(const char *host, int port) {
+int open_client_socket(int socktype, const char *host, int port) {
 #ifdef WIN32
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
@@ -71,7 +80,7 @@ int open_client_socket(const char *host, int port) {
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
-	hints.ai_socktype = SOCK_STREAM; /* TCP socket */
+	hints.ai_socktype = socktype;
 
 	char ports[32];
 	sprintf(ports, "%d", port);
@@ -96,3 +105,15 @@ int open_client_socket(const char *host, int port) {
 	freeaddrinfo(result);
 	return rp ? fd : -1;
 }
+
+int print_sockaddr(const struct sockaddr *sa, int sasz, struct sockaddr_string *s) {
+	if (getnameinfo(sa, sasz, s->host.c_str, sizeof(s->host.c_str), s->port.c_str, sizeof(s->port.c_str), NI_NUMERICHOST | NI_NUMERICSERV)) {
+		ca_setlen(&s->host, 0);
+		ca_setlen(&s->port, 0);
+		return -1;
+	}
+	ca_setlen(&s->host, strlen(s->host.c_str));
+	ca_setlen(&s->port, strlen(s->port.c_str));
+	return 0;
+}
+

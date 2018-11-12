@@ -9,7 +9,6 @@ void start_timer(struct timer *t) {
 	LARGE_INTEGER li;
 	QueryPerformanceCounter(&li);
 	t->a = li.QuadPart;
-	t->b = 0;
 }
 double stop_timer(struct timer *t) {
 	LARGE_INTEGER stop_time;
@@ -19,28 +18,34 @@ double stop_timer(struct timer *t) {
 	QueryPerformanceFrequency(&freq);
 	return (double)delta / (double)freq.QuadPart;
 }
+uint64_t monotonic_nanoseconds() {
+	uint64_t ms = GetTickCount64();
+	return ms * 1000 * 1000;
+}
 
 #elif defined __linux__
 #include <time.h>
 
 void start_timer(struct timer *t) {
-	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	t->a = ts.tv_sec;
-	t->b = ts.tv_nsec;
+	t->a = monotonic_nanoseconds();
 }
 
 double stop_timer(struct timer *t) {
-	struct timespec stop_time;
-	clock_gettime(CLOCK_MONOTONIC, &stop_time);
-	int64_t delta_sec = stop_time.tv_sec - t->a;
-	int64_t delta_ns = stop_time.tv_nsec - t->b;
-	return (double)delta_sec + (double)delta_ns / 1e9;
+	uint64_t delta = monotonic_nanoseconds() - t->a;
+	return (double)delta / 1e9;
+}
+
+uint64_t monotonic_nanoseconds(void) {
+	struct timespec tv;
+	clock_gettime(CLOCK_MONOTONIC, &tv);
+	return ((uint64_t)(tv.tv_sec) * 1000 * 1000 * 1000) + tv.tv_nsec;
 }
 
 #elif defined __APPLE__
 
 #include <mach/mach_time.h>
+
+static mach_timebase_info_data_t g_timebase_info;
 
 void start_timer(struct timer *t) {
 	t->a = mach_absolute_time();
@@ -48,11 +53,21 @@ void start_timer(struct timer *t) {
 
 double stop_timer(struct timer *t) {
 	uint64_t end = mach_absolute_time();
-	mach_timebase_info_data_t rate_nsec;
-	mach_timebase_info(&rate_nsec);
+	if (g_timebase_info.denom == 0) {
+		mach_timebase_info(&g_timebase_info);
+	}
 	uint64_t delta = end - t->a;
-	return (double) delta * rate_nsec.numer / (double) rate_nsec.denom / 1e9;
+	return (double) delta * g_timebase_info.numer / (double) g_timebase_info.denom / 1e9;
 }
+tick_t tick_now() {
+	uint64_t ticks = mach_absolute_time();
+	if (g_timebase_info.denom == 0) {
+		mach_timebase_info(&g_timebase_info);
+	}
+	double ns = ((double)ticks * g_timebase_info.numer) / g_timebase_info.denom;
+	return (uint64_t)ns;
+}
+
 
 #else
 #error

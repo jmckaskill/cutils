@@ -1,4 +1,4 @@
-obj = bin/obj/cutils/$TGT
+obj = bin/obj/$TGT
 bin = bin/$TGT
 src = $CUTILS_DIR/src
 
@@ -6,59 +6,77 @@ rule run-test
  command = $in -o $out
  description = TEST $in -o $out
 
-build $obj/hash_test.o: cc $src/hash_test.c
-build $bin/test_hash.exe: clink $obj/hash_test.o $obj/cutils.lib
+build $obj/cutils/hash_test.o: cc $src/hash_test.c
+build $bin/test_hash.exe: clink $obj/cutils/hash_test.o $obj/cutils.lib
 build $bin/test_hash.log: run-test $bin/test_hash.exe
 
-build $obj/rbtree_test.o: cc $src/rbtree_test.c
-build $bin/test_rbtree.exe: clink $obj/rbtree_test.o $obj/cutils.lib
+build $obj/cutils/rbtree_test.o: cc $src/rbtree_test.c
+build $bin/test_rbtree.exe: clink $obj/cutils/rbtree_test.o $obj/cutils.lib
 build $bin/test_rbtree.log: run-test $bin/test_rbtree.exe
 
-build $obj/heap_test.o: cc $src/heap_test.c
-build $bin/test_heap.exe: clink $obj/heap_test.o $obj/cutils.lib
+build $obj/cutils/heap_test.o: cc $src/heap_test.c
+build $bin/test_heap.exe: clink $obj/cutils/heap_test.o $obj/cutils.lib
 build $bin/test_heap.log: run-test $bin/test_heap.exe
 
-build $obj/flag_test.o: cc $src/flag_test.c
-build $bin/test_flag.exe: clink $obj/flag_test.o $obj/cutils.lib
+build $obj/cutils/flag_test.o: cc $src/flag_test.c
+build $bin/test_flag.exe: clink $obj/cutils/flag_test.o $obj/cutils.lib
 build $bin/test_flag.log: run-test $bin/test_flag.exe
 
-build $obj/str_test.o: cc $src/str_test.c
-build $bin/test_str.exe: clink $obj/str_test.o $obj/cutils.lib
+build $obj/cutils/str_test.o: cc $src/str_test.c
+build $bin/test_str.exe: clink $obj/cutils/str_test.o $obj/cutils.lib
 build $bin/test_str.log: run-test $bin/test_str.exe
 
-build $obj/test_test.o: cc $src/test_test.c
-build $bin/test_test.exe: clink $obj/test_test.o $obj/cutils.lib
+build $obj/cutils/test_test.o: cc $src/test_test.c
+build $bin/test_test.exe: clink $obj/cutils/test_test.o $obj/cutils.lib
 build $bin/test_test.log: run-test $bin/test_test.exe
 
-build $obj/socket.o: cc $src/socket.c
-build $obj/timer.o: cc $src/timer.c
-build $obj/mapped-file_win.o: cc $src/mapped-file_win.c
-build $obj/mapped-file_posix.o: cc $src/mapped-file_posix.c
-build $obj/file.o: cc $src/file.c
-build $obj/zip-writer.o: cc $src/zip-writer.c
-build $obj/mersenne-twister.o: cc $src/rand/mersenne-twister.c
-build $obj/str.o: cc $src/str.c
-build $obj/flag.o: cc $src/flag.c
-build $obj/test.o: cc $src/test.c
-build $obj/rbtree.o: cc $src/rbtree.c
-build $obj/heap.o: cc $src/heap.c
-build $obj/vector.o: cc $src/vector.c
-build $obj/hash.o: cc $src/hash.c
-build $obj/utf.o: cc $src/utf.c
+build $obj/cutils/socket.o: cc $src/socket.c
+build $obj/cutils/timer.o: cc $src/timer.c
+build $obj/cutils/mapped-file_win.o: cc $src/mapped-file_win.c
+build $obj/cutils/mapped-file_posix.o: cc $src/mapped-file_posix.c
+build $obj/cutils/file.o: cc $src/file.c
+build $obj/cutils/zip-writer.o: cc $src/zip-writer.c
+build $obj/cutils/mersenne-twister.o: cc $src/rand/mersenne-twister.c
+build $obj/cutils/str.o: cc $src/str.c
+build $obj/cutils/flag.o: cc $src/flag.c
+build $obj/cutils/test.o: cc $src/test.c
+build $obj/cutils/rbtree.o: cc $src/rbtree.c
+build $obj/cutils/heap.o: cc $src/heap.c
+build $obj/cutils/vector.o: cc $src/vector.c
+build $obj/cutils/hash.o: cc $src/hash.c
+build $obj/cutils/utf.o: cc $src/utf.c
 build $obj/cutils.lib: lib $
- $obj/socket.o $
- $obj/timer.o $
- $obj/mapped-file_win.o $
- $obj/mapped-file_posix.o $
- $obj/file.o $
- $obj/zip-writer.o $
- $obj/mersenne-twister.o $
- $obj/str.o $
- $obj/flag.o $
- $obj/test.o $
- $obj/rbtree.o $
- $obj/vector.o $
- $obj/heap.o $
- $obj/hash.o $
- $obj/utf.o $
+ $obj/cutils/socket.o $
+ $obj/cutils/timer.o $
+ $obj/cutils/mapped-file_win.o $
+ $obj/cutils/mapped-file_posix.o $
+ $obj/cutils/file.o $
+ $obj/cutils/mersenne-twister.o $
+ $obj/cutils/str.o $
+ $obj/cutils/flag.o $
+ $obj/cutils/test.o $
+ $obj/cutils/rbtree.o $
+ $obj/cutils/vector.o $
+ $obj/cutils/heap.o $
+ $obj/cutils/hash.o $
+ $obj/cutils/utf.o $
+
+build $obj/cutils/stream/filter-decode-xz.o: cc src/stream/filter-decode-xz.c
+build $obj/cutils/stream/filter-deflate.o: cc src/stream/filter-deflate.c
+build $obj/cutils/stream/filter-limit.o: cc src/stream/filter-limit.c
+build $obj/cutils/stream/source-buffer.o: cc src/stream/source-buffer.c
+build $obj/cutils/stream/source-file.o: cc src/stream/source-file.c
+build $obj/cutils/stream/path.o: cc src/stream/path.c
+build $obj/cutils/stream/container-zip.o: cc src/stream/container-zip.c
+build $obj/cutils/stream.lib: lib $
+ $obj/cutils/stream/filter-decode-xz.o $
+ $obj/cutils/stream/filter-deflate.o $
+ $obj/cutils/stream/filter-limit.o $
+ $obj/cutils/stream/source-buffer.o $
+ $obj/cutils/stream/source-file.o $
+ $obj/cutils/stream/path.o $
+ $obj/cutils/stream/container-zip.o $
+ $obj/cutils/zip-writer.o $
+
+
 

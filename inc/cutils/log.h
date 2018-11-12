@@ -1,5 +1,13 @@
 #pragma once
 
+#if defined _MSC_VER && defined _DEBUG
+#include <crtdbg.h>
+#define BREAK() (_CrtDbgBreak(),0)
+#else
+#include <stdlib.h>
+#define BREAK() (abort(),0)
+#endif
+
 typedef struct logger log_t;
 
 struct logger {
@@ -10,7 +18,11 @@ struct logger {
 };
 
 #define LOG(PLOG, ...) ((void) ((void*)(PLOG) != NULL && (PLOG)->log(PLOG, __VA_ARGS__)))
+#define FATAL(PLOG, ...) (LOG(PLOG, __VA_ARGS__), BREAK())
 
 #ifndef container_of
 #define container_of(ptr, type, member) ((type*) ((char*) (ptr) - offsetof(type, member)))
 #endif
+
+log_t stderr_log;
+log_t stdout_log;

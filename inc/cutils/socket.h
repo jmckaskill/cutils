@@ -38,7 +38,21 @@ static inline int set_non_blocking(int fd) {
 #endif
 }
 
-int must_open_server_socket(const char *host, int port);
-int open_server_socket(const char *host, int port);
-int open_client_socket(const char *host, int port);
+struct sockaddr_string {
+	struct {
+		size_t len;
+		char c_str[40];
+	} host;
+	struct {
+		size_t len;
+		char c_str[8];
+	} port;
+};
+
+int must_open_server_socket(int socktype, const char *host, int port);
+int open_server_socket(int socktype, const char *host, int port);
+int open_client_socket(int socktype, const char *host, int port);
+
+int print_sockaddr(const struct sockaddr *sa, int sasz, struct sockaddr_string *s);
+
 
