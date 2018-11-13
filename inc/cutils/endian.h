@@ -122,84 +122,100 @@ static inline double little_double_aligned(const void *p) {
 #define little_double_aligned(P) little_double(P)
 #endif
 
-static inline void write_little_16(uint8_t *p, uint16_t v) {
+static inline void *write_little_16(void *p, uint16_t v) {
+	uint8_t *u = p;
 #if defined NATIVE_LITTLE_ENDIAN
-	memcpy(p, &v, 2);
+	memcpy(u, &v, 2);
 #else
-	p[0] = (uint8_t) (v);
-	p[1] = (uint8_t) (v >> 8);
+	u[0] = (uint8_t) (v);
+	u[1] = (uint8_t) (v >> 8);
 #endif
+	return u + 2;
 }
-static inline void write_little_24(uint8_t *p, uint32_t v) {
+static inline void *write_little_24(void *p, uint32_t v) {
+	uint8_t *u = p;
 #ifdef NATIVE_LITTLE_ENDIAN
-	memcpy(p, &v, 3);
+	memcpy(u, &v, 3);
 #else
-	p[0] = (uint8_t) (v);
-	p[1] = (uint8_t) (v >> 8);
-	p[2] = (uint8_t) (v >> 16);
+	u[0] = (uint8_t) (v);
+	u[1] = (uint8_t) (v >> 8);
+	u[2] = (uint8_t) (v >> 16);
 #endif
+	return u + 3;
 }
-static inline void write_little_32(uint8_t *p, uint32_t v) {
+static inline void *write_little_32(void *p, uint32_t v) {
+	uint8_t *u = p;
 #if defined NATIVE_LITTLE_ENDIAN
-	memcpy(p, &v, 4);
+	memcpy(u, &v, 4);
 #else
-	p[0] = (uint8_t) (v);
-	p[1] = (uint8_t) (v >> 8);
-	p[2] = (uint8_t) (v >> 16);
-	p[3] = (uint8_t) (v >> 24);
+	u[0] = (uint8_t) (v);
+	u[1] = (uint8_t) (v >> 8);
+	u[2] = (uint8_t) (v >> 16);
+	u[3] = (uint8_t) (v >> 24);
 #endif
+	return u + 4;
 }
-static inline void write_little_48(uint8_t *p, uint64_t v) {
+static inline void *write_little_48(void *p, uint64_t v) {
+	uint8_t *u = p;
 #ifdef NATIVE_LITTLE_ENDIAN
-	memcpy(p, &v, 6);
+	memcpy(u, &v, 6);
 #else
-	p[0] = (uint8_t) (v);
-	p[1] = (uint8_t) (v >> 8);
-	p[2] = (uint8_t) (v >> 16);
-	p[3] = (uint8_t) (v >> 24);
-	p[4] = (uint8_t) (v >> 32);
-	p[5] = (uint8_t) (v >> 40);
+	u[0] = (uint8_t) (v);
+	u[1] = (uint8_t) (v >> 8);
+	u[2] = (uint8_t) (v >> 16);
+	u[3] = (uint8_t) (v >> 24);
+	u[4] = (uint8_t) (v >> 32);
+	u[5] = (uint8_t) (v >> 40);
 #endif
+	return u + 6;
 }
-static inline void write_little_64(uint8_t *p, uint64_t v) {
+static inline void *write_little_64(void *p, uint64_t v) {
+	uint8_t *u = p;
 #if defined NATIVE_LITTLE_ENDIAN
-	memcpy(p, &v, 8);
+	memcpy(u, &v, 8);
 #else
-	p[0] = (uint8_t) (v);
-	p[1] = (uint8_t) (v >> 8);
-	p[2] = (uint8_t) (v >> 16);
-	p[3] = (uint8_t) (v >> 24);
-	p[4] = (uint8_t) (v >> 32);
-	p[5] = (uint8_t) (v >> 40);
-	p[6] = (uint8_t) (v >> 48);
-	p[7] = (uint8_t) (v >> 56);
+	u[0] = (uint8_t) (v);
+	u[1] = (uint8_t) (v >> 8);
+	u[2] = (uint8_t) (v >> 16);
+	u[3] = (uint8_t) (v >> 24);
+	u[4] = (uint8_t) (v >> 32);
+	u[5] = (uint8_t) (v >> 40);
+	u[6] = (uint8_t) (v >> 48);
+	u[7] = (uint8_t) (v >> 56);
 #endif
+	return u + 8;
 }
-static inline void write_little_float(uint8_t *p, float f) {
+static inline void *write_little_float(void *p, float f) {
 	union endian_float u;
 	u.d = f;
-	write_little_32(p, u.u);
+	return write_little_32(p, u.u);
 }
 
-static inline void write_little_double(uint8_t *p, double f) {
+static inline void *write_little_double(void *p, double f) {
 	union endian_double u;
 	u.d = f;
-	write_little_64(p, u.u);
+	return write_little_64(p, u.u);
 }
 
 #ifdef NATIVE_LITTLE_ENDIAN
-static inline void write_little_16_aligned(uint8_t *p, uint16_t v) {*(uint16_t*)p = v;}
-static inline void write_little_32_aligned(uint8_t *p, uint32_t v) {*(uint32_t*)p = v;}
-static inline void write_little_64_aligned(uint8_t *p, uint64_t v) {*(uint64_t*)p = v;}
-static inline void write_little_float_aligned(uint8_t *p, float f) {
+static inline void *write_little_16_aligned(void *p, uint16_t v) {
+	*(uint16_t*)p = v; return (uint16_t*)p + 1;
+}
+static inline void *write_little_32_aligned(void *p, uint32_t v) {
+	*(uint32_t*)p = v; return (uint32_t*)p + 1;
+}
+static inline void *write_little_64_aligned(void *p, uint64_t v) {
+	*(uint64_t*)p = v; return (uint64_t*)p + 1;
+}
+static inline void *write_little_float_aligned(void *p, float f) {
 	union endian_float u;
 	u.d = f;
-	write_little_32_aligned(p, u.u);
+	return write_little_32_aligned(p, u.u);
 }
-static inline void write_little_double_aligned(uint8_t *p, double f) {
+static inline void *write_little_double_aligned(void *p, double f) {
 	union endian_double u;
 	u.d = f;
-	write_little_64_aligned(p, u.u);
+	return write_little_64_aligned(p, u.u);
 }
 #else
 #define write_little_16_aligned write_little_16
@@ -210,93 +226,108 @@ static inline void write_little_double_aligned(uint8_t *p, double f) {
 #endif
 
 
-static inline uint16_t big_16(const uint8_t *p) {
-    return ((uint16_t) p[0] << 8)
-         | ((uint16_t) p[1]);
+static inline uint16_t big_16(const void *p) {
+	const uint8_t *u = p;
+	return ((uint16_t)u[0] << 8)
+         | ((uint16_t) u[1]);
 }
-static inline uint16_t big_24(const uint8_t *p) {
-	return ((uint32_t)p[0] << 16)
-		| ((uint32_t)p[1] << 8)
-		| ((uint32_t)p[2]);
+static inline uint32_t big_24(const void *p) {
+	const uint8_t *u = p;
+	return ((uint32_t)u[0] << 16)
+		| ((uint32_t)u[1] << 8)
+		| ((uint32_t)u[2]);
 }
-static inline uint32_t big_32(const uint8_t *p) {
-    return ((uint32_t) p[0] << 24)
-         | ((uint32_t) p[1] << 16)
-         | ((uint32_t) p[2] << 8)
-         | ((uint32_t) p[3]);
+static inline uint32_t big_32(const void *p) {
+	const uint8_t *u = p;
+	return ((uint32_t)u[0] << 24)
+         | ((uint32_t) u[1] << 16)
+         | ((uint32_t) u[2] << 8)
+         | ((uint32_t) u[3]);
 }
-static inline uint64_t big_48(const uint8_t *p) {
-    return ((uint64_t) p[0] << 40)
-         | ((uint64_t) p[1] << 32)
-         | ((uint64_t) p[2] << 24)
-         | ((uint64_t) p[3] << 16)
-         | ((uint64_t) p[4] << 8)
-         | ((uint64_t) p[5]);
+static inline uint64_t big_48(const void *p) {
+	const uint8_t *u = p;
+	return ((uint64_t)u[0] << 40)
+         | ((uint64_t) u[1] << 32)
+         | ((uint64_t) u[2] << 24)
+         | ((uint64_t) u[3] << 16)
+         | ((uint64_t) u[4] << 8)
+         | ((uint64_t) u[5]);
 }
-static inline uint64_t big_64(const uint8_t *p) {
-    return ((uint64_t) p[0] << 56)
-         | ((uint64_t) p[1] << 48)
-         | ((uint64_t) p[2] << 40)
-         | ((uint64_t) p[3] << 32)
-         | ((uint64_t) p[4] << 24)
-         | ((uint64_t) p[5] << 16)
-         | ((uint64_t) p[6] << 8)
-         | ((uint64_t) p[7]);
+static inline uint64_t big_64(const void *p) {
+	const uint8_t *u = p;
+	return ((uint64_t)u[0] << 56)
+         | ((uint64_t) u[1] << 48)
+         | ((uint64_t) u[2] << 40)
+         | ((uint64_t) u[3] << 32)
+         | ((uint64_t) u[4] << 24)
+         | ((uint64_t) u[5] << 16)
+         | ((uint64_t) u[6] << 8)
+         | ((uint64_t) u[7]);
 }
 
-static inline float big_float(const uint8_t *p) {
+static inline float big_float(const void *p) {
 	union endian_float u;
 	u.u = big_32(p);
 	return u.d;
 }
 
-static inline double big_double(const uint8_t *p) {
+static inline double big_double(const void *p) {
 	union endian_double u;
 	u.u = big_64(p);
 	return u.d;
 }
 
-static inline void write_big_16(uint8_t *p, uint16_t v) {
-    p[0] = (uint8_t) (v >> 8);
-    p[1] = (uint8_t) (v);
+static inline void *write_big_16(void *p, uint16_t v) {
+    uint8_t *u = p;
+	u[0] = (uint8_t) (v >> 8);
+    u[1] = (uint8_t) (v);
+	return u + 2;
 }
-static inline void write_big_32(uint8_t *p, uint32_t v) {
-    p[0] = (uint8_t) (v >> 24);
-    p[1] = (uint8_t) (v >> 16);
-    p[2] = (uint8_t) (v >> 8);
-    p[3] = (uint8_t) (v);
+static inline void *write_big_32(void *p, uint32_t v) {
+    uint8_t *u = p;
+	u[0] = (uint8_t) (v >> 24);
+    u[1] = (uint8_t) (v >> 16);
+    u[2] = (uint8_t) (v >> 8);
+    u[3] = (uint8_t) (v);
+	return u + 4;
 }
-static inline void write_big_24(uint8_t *p, uint32_t v) {
-	p[0] = (uint8_t)(v >> 16);
-	p[1] = (uint8_t)(v >> 8);
-	p[2] = (uint8_t)(v);
+static inline void *write_big_24(void *p, uint32_t v) {
+	uint8_t *u = p;
+	u[0] = (uint8_t)(v >> 16);
+	u[1] = (uint8_t)(v >> 8);
+	u[2] = (uint8_t)(v);
+	return u + 3;
 }
-static inline void write_big_48(uint8_t *p, uint64_t v) {
-    p[0] = (uint8_t) (v >> 40);
-    p[1] = (uint8_t) (v >> 32);
-    p[2] = (uint8_t) (v >> 24);
-    p[3] = (uint8_t) (v >> 16);
-    p[4] = (uint8_t) (v >> 8);
-    p[5] = (uint8_t) (v);
+static inline void *write_big_48(void *p, uint64_t v) {
+    uint8_t *u = p;
+	u[0] = (uint8_t) (v >> 40);
+    u[1] = (uint8_t) (v >> 32);
+    u[2] = (uint8_t) (v >> 24);
+    u[3] = (uint8_t) (v >> 16);
+    u[4] = (uint8_t) (v >> 8);
+    u[5] = (uint8_t) (v);
+	return u + 6;
 }
-static inline void write_big_64(uint8_t *p, uint64_t v) {
-    p[0] = (uint8_t) (v >> 56);
-    p[1] = (uint8_t) (v >> 48);
-    p[2] = (uint8_t) (v >> 40);
-    p[3] = (uint8_t) (v >> 32);
-    p[4] = (uint8_t) (v >> 24);
-    p[5] = (uint8_t) (v >> 16);
-    p[6] = (uint8_t) (v >> 8);
-    p[7] = (uint8_t) (v);
+static inline void *write_big_64(void *p, uint64_t v) {
+	uint8_t *u = p;
+    u[0] = (uint8_t) (v >> 56);
+    u[1] = (uint8_t) (v >> 48);
+    u[2] = (uint8_t) (v >> 40);
+    u[3] = (uint8_t) (v >> 32);
+    u[4] = (uint8_t) (v >> 24);
+    u[5] = (uint8_t) (v >> 16);
+    u[6] = (uint8_t) (v >> 8);
+    u[7] = (uint8_t) (v);
+	return u + 8;
 }
-static inline void write_big_float(uint8_t *p, float f) {
+static inline void *write_big_float(void *p, float f) {
 	union endian_float u;
 	u.d = f;
-	write_big_32(p, u.u);
+	return write_big_32(p, u.u);
 }
 
-static inline void write_big_double(uint8_t *p, double f) {
+static inline void *write_big_double(void *p, double f) {
 	union endian_double u;
 	u.d = f;
-	write_big_64(p, u.u);
+	return write_big_64(p, u.u);
 }

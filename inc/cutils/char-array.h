@@ -89,6 +89,7 @@ struct slice {
 #define slice_all(P, STR) ((P)->len = (STR).len, (P)->c_str = (STR).c_str)
 #define slice_left(P, STR, PTR) ((P)->len = (PTR) - (STR).c_str, (P)->c_str = (STR).c_str)
 #define slice_right(P, STR, PTR) ((P)->len = (STR).c_str + (STR).len - (PTR), (P)->c_str = (PTR))
+#define slice_string(P, STR) ((P)->len = sizeof(STR)-1, (P)->c_str = (STR))
 
 // the following are the implementation functions
 
