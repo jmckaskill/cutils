@@ -59,7 +59,7 @@ double stop_timer(struct timer *t) {
 	uint64_t delta = end - t->a;
 	return (double) delta * g_timebase_info.numer / (double) g_timebase_info.denom / 1e9;
 }
-tick_t tick_now() {
+uint64_t monotonic_nanoseconds(void) {
 	uint64_t ticks = mach_absolute_time();
 	if (g_timebase_info.denom == 0) {
 		mach_timebase_info(&g_timebase_info);
