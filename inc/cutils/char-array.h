@@ -94,7 +94,6 @@ struct slice {
 // the following are the implementation functions
 
 static inline int ca_set2_(char *buf, size_t bufsz, size_t *plen, const char *a, size_t asz) {
-	assert(*plen >= 0 && *plen < bufsz);
 	if (asz < bufsz) {
 		memcpy(buf, a, asz);
 		*plen = asz;
