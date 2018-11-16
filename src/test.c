@@ -236,9 +236,9 @@ int expect_str_eq(int assert, const char *a, const char *b, const char *astr, co
 	return ret;
 }
 
-void print_test_data(str_t *s, const uint8_t *p, int sz) {
+void print_test_data(str_t *s, const uint8_t *p, size_t sz) {
 	str_addch(s, '[');
-	for (int i = 0; i < sz; i++) {
+	for (size_t i = 0; i < sz; i++) {
 		if (i) {
 			str_addch(s, ',');
 		}
@@ -247,7 +247,7 @@ void print_test_data(str_t *s, const uint8_t *p, int sz) {
 	str_addch(s, ']');
 }
 
-int expect_bytes_eq(int assert, const void *a, int alen, const void *b, int blen, const char *astr, const char *bstr, const char *file, int line) {
+int expect_bytes_eq(int assert, const void *a, size_t alen, const void *b, size_t blen, const char *astr, const char *bstr, const char *file, int line) {
 	int ret = 0;
 	if (alen != blen || memcmp(a, b, alen)) {
 		str_t s = STR_INIT;

@@ -23,13 +23,13 @@ int expect_int_eq(int assert, int64_t a, int64_t b, const char *astr, const char
 int expect_int_gt(int assert, int64_t a, int64_t b, const char *astr, const char *bstr, const char *file, int line);
 int expect_int_ge(int assert, int64_t a, int64_t b, const char *astr, const char *bstr, const char *file, int line);
 int expect_str_eq(int assert, const char *a, const char *b, const char *astr, const char *bstr, const char *file, int line);
-int expect_bytes_eq(int assert, const void *a, int alen, const void *b, int blen, const char *astr, const char *bstr, const char *file, int line);
+int expect_bytes_eq(int assert, const void *a, size_t alen, const void *b, size_t blen, const char *astr, const char *bstr, const char *file, int line);
 int expect_float_eq(int assert, double a, double b, const char *astr, const char *bstr, const char *file, int line);
 int expect_near(int assert, double a, double b, double delta, const char *astr, const char *bstr, const char *file, int line);
 int expect_ptr_eq(int assert, const void *a, const void *b, const char *astr, const char *bstr, const char *file, int line);
 
 int is_equiv_float(double a, double b);
-void print_test_data(str_t *s, const uint8_t *a, int sz);
+void print_test_data(str_t *s, const uint8_t *a, size_t sz);
 
 #define CHECK(A, FMT, ...) (expect_true(0, (A), __FILE__, __LINE__, FMT, __VA_ARGS__) && BREAK())
 #define ASSERT_TRUE(A) (expect_true(1, (A), __FILE__, __LINE__, "assert failed: " #A) && BREAK())
