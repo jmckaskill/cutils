@@ -105,8 +105,8 @@ int open_client_socket(int socktype, const char *host, int port) {
 	return rp ? fd : -1;
 }
 
-int print_sockaddr(struct sockaddr_string *s, const struct sockaddr *sa, int sasz) {
-	if (getnameinfo(sa, sasz, s->host.c_str, sizeof(s->host.c_str), s->port.c_str, sizeof(s->port.c_str), NI_NUMERICHOST | NI_NUMERICSERV)) {
+int print_sockaddr(struct sockaddr_string *s, const struct sockaddr *sa, size_t sasz) {
+	if (getnameinfo(sa, (socklen_t)sasz, s->host.c_str, sizeof(s->host.c_str), s->port.c_str, sizeof(s->port.c_str), NI_NUMERICHOST | NI_NUMERICSERV)) {
 		ca_setlen(&s->host, 0);
 		ca_setlen(&s->port, 0);
 		return -1;

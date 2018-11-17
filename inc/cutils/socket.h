@@ -58,6 +58,6 @@ int must_open_server_socket(int socktype, const char *host, int port);
 int open_server_socket(int socktype, const char *host, int port);
 int open_client_socket(int socktype, const char *host, int port);
 
-int print_sockaddr(struct sockaddr_string *s, const struct sockaddr *sa, int sasz);
+int print_sockaddr(struct sockaddr_string *s, const struct sockaddr *sa, size_t sasz);
 
 

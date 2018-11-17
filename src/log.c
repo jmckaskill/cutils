@@ -13,9 +13,10 @@
 #endif
 
 static int do_log(log_t *log, const char *fmt, ...) {
-	uint64_t utc = utc_nanoseconds();
-	time_t sec = (time_t)(utc / 1000 / 1000 / 1000);
-	struct tm *tm = localtime(&sec);
+	int tzoffmin;
+	uint64_t utc = utc_us(&tzoffmin);
+	time_t sec = (time_t)(utc / 1000 / 1000) + (tzoffmin * 60);
+	struct tm *tm = gmtime(&sec);
 	struct {
 		size_t len;
 		char c_str[256];
@@ -30,8 +31,8 @@ static int do_log(log_t *log, const char *fmt, ...) {
 		tm->tm_min,
 		tm->tm_sec,
 		(utc / 1000) % 1000000,
-		tm->tm_gmtoff / 3600,
-		(tm->tm_gmtoff / 60) % 60);
+		tzoffmin / 60,
+		abs(tzoffmin) % 60);
 	ca_vaddf(&buf, fmt, ap);
 	if (!str_ends_with(buf, "\n")) {
 		ca_addch(&buf, '\n');
