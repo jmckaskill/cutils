@@ -10,3 +10,4 @@ double restart_timer(struct timer *t);
 double stop_timer(struct timer *t);
 
 uint64_t monotonic_nanoseconds(void);
+uint64_t utc_nanoseconds(void);

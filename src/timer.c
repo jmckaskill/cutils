@@ -42,7 +42,8 @@ uint64_t monotonic_nanoseconds(void) {
 }
 
 #elif defined __APPLE__
-
+#include <sys/time.h>
+#include <stddef.h>
 #include <mach/mach_time.h>
 
 static mach_timebase_info_data_t g_timebase_info;
@@ -66,6 +67,13 @@ uint64_t monotonic_nanoseconds(void) {
 	}
 	double ns = ((double)ticks * g_timebase_info.numer) / g_timebase_info.denom;
 	return (uint64_t)ns;
+}
+uint64_t utc_nanoseconds(void) {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	uint64_t sec = (uint64_t)tv.tv_sec * 1000 * 1000 * 1000;
+	uint64_t us = (uint64_t)tv.tv_usec * 1000;
+	return sec + us;
 }
 
 
