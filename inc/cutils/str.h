@@ -19,16 +19,9 @@ struct str {
 	size_t len;
 	char *c_str;
 };
-
 extern char str_initbuf[];
 
-#define STR_INIT {0,0,str_initbuf}
-#define STR_STATIC(str) {0,sizeof(str)-1,(char*)str}
 
-static inline void str_init(str_t *s) {
-	s->cap = s->len = 0;
-	s->c_str = str_initbuf;
-}
 static inline void str_setlen(str_t *s, size_t len) {
 	assert(0 <= len && len <= s->cap);
 	s->len = len;
@@ -113,6 +106,20 @@ static inline void str_swap(str_t *a, str_t *b) {
 	*a = *b;
 	*b = c;
 }
+
+
+#define STR_INIT {0,0,str_initbuf}
+
+static inline str_t str_init0(void) {
+	str_t ret = STR_INIT;
+	return ret;
+}
+static inline str_t str_init(const char *str) {
+	str_t ret = STR_INIT;
+	str_set(&ret, str);
+	return ret;
+}
+
 
 #ifdef __cplusplus
 }

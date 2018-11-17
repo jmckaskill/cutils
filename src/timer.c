@@ -41,6 +41,7 @@ uint64_t utc_us(int *tzoffmin) {
 
 #elif defined __linux__
 #include <time.h>
+#include <sys/time.h>
 
 void start_timer(struct timer *t) {
 	t->a = monotonic_ns();
