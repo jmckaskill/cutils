@@ -27,10 +27,10 @@ struct logger {
 extern log_t stderr_log;
 extern log_t stdout_log;
 
-struct file_log {
+struct file_logger {
 	log_t log;
-	FILE *f;
+	const char *path;
 };
 
-log_t *open_file_log(struct file_log *fl, const char *path);
+log_t *open_file_log(struct file_logger *fl, const char *path);
 

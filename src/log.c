@@ -52,23 +52,24 @@ log_t stderr_log = { &do_log };
 log_t stdout_log = { &do_log };
 
 static int do_file_log(log_t *log, const char *fmt, ...) {
-	struct file_log *fl = (struct file_log*) log;
-	struct {
-		size_t len;
-		char c_str[512];
-	} buf;
-	va_list ap;
-	va_start(ap, fmt);
-	ca_vsetf(&buf, fmt, ap);
-	return fwrite(buf.c_str, 1, buf.len, fl->f);
+	struct file_logger *fl = (struct file_logger*) log;
+	FILE *f = io_fopen(fl->path, "a");
+	if (f) {
+		struct {
+			size_t len;
+			char c_str[512];
+		} buf;
+		va_list ap;
+		va_start(ap, fmt);
+		ca_vsetf(&buf, fmt, ap);
+		fwrite(buf.c_str, 1, buf.len, f);
+		fclose(f);
+	}
+	return 0;
 }
 
-log_t *open_file_log(struct file_log *fl, const char *path) {
-	FILE *f = io_fopen(path, "r");
-	if (!f) {
-		return NULL;
-	}
-	fl->f = f;
+log_t *open_file_log(struct file_logger *fl, const char *path) {
+	fl->path = path;
 	fl->log.log = &do_file_log;
 	return &fl->log;
 }
