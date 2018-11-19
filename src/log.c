@@ -1,6 +1,7 @@
 #include "cutils/log.h"
 #include "cutils/char-array.h"
 #include "cutils/timer.h"
+#include "cutils/file.h"
 #include <stdio.h>
 #include <time.h>
 
@@ -19,7 +20,7 @@ static int do_log(log_t *log, const char *fmt, ...) {
 	struct tm *tm = gmtime(&sec);
 	struct {
 		size_t len;
-		char c_str[256];
+		char c_str[512];
 	} buf;
 	va_list ap;
 	va_start(ap, fmt);
@@ -50,3 +51,24 @@ static int do_log(log_t *log, const char *fmt, ...) {
 log_t stderr_log = { &do_log };
 log_t stdout_log = { &do_log };
 
+static int do_file_log(log_t *log, const char *fmt, ...) {
+	struct file_log *fl = (struct file_log*) log;
+	struct {
+		size_t len;
+		char c_str[512];
+	} buf;
+	va_list ap;
+	va_start(ap, fmt);
+	ca_vsetf(&buf, fmt, ap);
+	return fwrite(buf.c_str, 1, buf.len, fl->f);
+}
+
+log_t *open_file_log(struct file_log *fl, const char *path) {
+	FILE *f = io_fopen(path, "r");
+	if (!f) {
+		return NULL;
+	}
+	fl->f = f;
+	fl->log.log = &do_file_log;
+	return &fl->log;
+}
