@@ -19,24 +19,18 @@ double stop_timer(struct timer *t) {
 	QueryPerformanceFrequency(&freq);
 	return (double)delta / (double)freq.QuadPart;
 }
-uint64_t monotonic_ns() {
+uint64_t monotonic_ns(void) {
 	uint64_t ms = GetTickCount64();
 	return ms * 1000 * 1000;
 }
 
-uint64_t utc_us(int *tzoffmin) {
+uint64_t utc_us(void) {
 	FILETIME ft;
 	GetSystemTimeAsFileTime(&ft);
 	LARGE_INTEGER li;
 	li.HighPart = ft.dwHighDateTime;
 	li.LowPart = ft.dwLowDateTime;
-	uint64_t u = (li.QuadPart / 10) - UINT64_C(11644473600000000);
-	if (tzoffmin) {
-		TIME_ZONE_INFORMATION tz;
-		GetTimeZoneInformation(&tz);
-		*tzoffmin = -tz.Bias;
-	}
-	return u;
+	return (li.QuadPart / 10) - UINT64_C(11644473600000000);
 }
 
 #elif defined __linux__
@@ -56,18 +50,6 @@ uint64_t monotonic_ns(void) {
 	struct timespec tv;
 	clock_gettime(CLOCK_MONOTONIC, &tv);
 	return ((uint64_t)(tv.tv_sec) * 1000 * 1000 * 1000) + tv.tv_nsec;
-}
-
-uint64_t utc_us(int *tzoffmin) {
-	struct timeval tv;
-	struct timezone tz;
-	gettimeofday(&tv, tzoffmin ? &tz : NULL);
-	uint64_t sec = (uint64_t)tv.tv_sec * 1000 * 1000 * 1000;
-	uint64_t us = (uint64_t)tv.tv_usec * 1000;
-	if (tzoffmin) {
-		*tzoffmin = -tz.tz_minuteswest;
-	}
-	return sec + us;
 }
 
 #elif defined __APPLE__
@@ -98,21 +80,19 @@ uint64_t monotonic_ns(void) {
 	return (uint64_t)ns;
 }
 
-uint64_t utc_us(int *tzoffmin) {
+
+#else
+#error
+#endif
+
+#ifndef WIN32
+uint64_t utc_us(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	uint64_t sec = (uint64_t)tv.tv_sec * 1000 * 1000;
 	uint64_t us = (uint64_t)tv.tv_usec;
-	if (tzoffmin) {
-		struct tm *tm = localtime(&tv.tv_sec);
-		*tzoffmin = tm->tm_gmtoff / 60;
-	}
 	return sec + us;
 }
-
-
-#else
-#error
 #endif
 
 double restart_timer(struct timer *t) {

@@ -13,11 +13,18 @@
 #include <crtdbg.h>
 #endif
 
+static int timezone_offset(time_t utc) {
+	struct tm *ptm = gmtime(&utc);
+	// Request that mktime() looksup dst in timezone database
+	ptm->tm_isdst = -1;
+	return (int)difftime(utc, mktime(ptm));
+}
+
 static int do_log(log_t *log, const char *fmt, ...) {
-	int tzoffmin;
-	uint64_t utc = utc_us(&tzoffmin);
-	time_t sec = (time_t)(utc / 1000 / 1000) + (tzoffmin * 60);
-	struct tm *tm = gmtime(&sec);
+	uint64_t us = utc_us();
+	time_t utc = (time_t)(us / 1000 / 1000);
+	int tzoff = timezone_offset(utc) / 60;
+	struct tm *tm = localtime(&utc);
 	struct {
 		size_t len;
 		char c_str[512];
@@ -31,9 +38,9 @@ static int do_log(log_t *log, const char *fmt, ...) {
 		tm->tm_hour,
 		tm->tm_min,
 		tm->tm_sec,
-		(utc / 1000) % 1000000,
-		tzoffmin / 60,
-		abs(tzoffmin) % 60);
+		(us / 1000) % 1000000,
+		tzoff / 60,
+		abs(tzoff) % 60);
 	ca_vaddf(&buf, fmt, ap);
 	if (!str_ends_with(buf, "\n")) {
 		ca_addch(&buf, '\n');

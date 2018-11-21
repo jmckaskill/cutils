@@ -10,4 +10,4 @@ double restart_timer(struct timer *t);
 double stop_timer(struct timer *t);
 
 uint64_t monotonic_ns(void);
-uint64_t utc_us(int *tzoffmin);
+uint64_t utc_us(void);
