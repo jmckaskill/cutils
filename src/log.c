@@ -38,7 +38,7 @@ static int do_log(log_t *log, const char *fmt, ...) {
 		tm->tm_hour,
 		tm->tm_min,
 		tm->tm_sec,
-		(us / 1000) % 1000000,
+		us % 1000000,
 		tzoff / 60,
 		abs(tzoff) % 60);
 	ca_vaddf(&buf, fmt, ap);
