@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 int open_server_socket(int socktype, const char *host, int port) {
 #ifdef WIN32
@@ -105,17 +106,28 @@ int open_client_socket(int socktype, const char *host, int port) {
 	return rp ? fd : -1;
 }
 
-const char *sockaddr_string(stack_string *s, const struct sockaddr *sa, socklen_t sasz) {
-	char host[64], port[16];
-	if (getnameinfo(sa, sasz, host, sizeof(host), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV)) {
-		return "INVALID ADDRESS";
-	}
-	if (sa->sa_family == AF_INET6) {
-		ca_setf(s, "[%s]:%s", host, port);
-	} else {
-		ca_setf(s, "%s:%s", host, port);
-	}
+static const char *print_ipv4(stack_string *s, const uint8_t *addr, uint16_t port) {
+	ca_setf(s, "%d.%d.%d.%d:%d", addr[0], addr[1], addr[2], addr[3], ntohs(port));
 	return s->c_str;
+}
+
+const char *sockaddr_string(stack_string *s, const struct sockaddr *sa, socklen_t sasz) {
+	static const uint8_t mapped6[] = { 0,0,0,0,0,0,0,0,0,0,255,255 };
+	struct sockaddr_in6 *sa6 = (struct sockaddr_in6*)sa;
+	struct sockaddr_in *sa4 = (struct sockaddr_in*)sa;
+	if (sa->sa_family == AF_INET6 && !memcmp(sa6->sin6_addr.s6_addr, mapped6, sizeof(mapped6))) {
+		return print_ipv4(s, sa6->sin6_addr.s6_addr + 12, sa6->sin6_port);
+	} else if (sa->sa_family == AF_INET) {
+		return print_ipv4(s, (uint8_t*)&sa4->sin_addr.s_addr, sa4->sin_port);
+	} else {
+		char host[64], port[16];
+		if (getnameinfo(sa, sasz, host, sizeof(host), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV)) {
+			return "INVALID ADDRESS";
+		} else {
+			ca_setf(s, "[%s]:%s", host, port);
+			return s->c_str;
+		}
+	}
 }
 
 const char *syserr_string(stack_string *s) {
