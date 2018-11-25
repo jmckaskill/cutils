@@ -17,7 +17,7 @@ struct rbnode {
 
 struct rbtree {
 	rbnode *root;
-	int size;
+	size_t size;
 };
 
 

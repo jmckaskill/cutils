@@ -21,6 +21,14 @@ typedef WSAPOLLFD pollfd;
 
 #include <stdbool.h>
 
+static inline bool call_again() {
+#ifdef WIN32
+	return false;
+#else
+	return errno == EINTR;
+#endif
+}
+
 static inline bool would_block() {
 #ifdef WIN32
 	return WSAGetLastError() == WSAEWOULDBLOCK;
@@ -43,21 +51,17 @@ static inline int set_ipv6_only(int fd, bool v6only) {
 	return setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&val, sizeof(val));
 }
 
-struct sockaddr_string {
-	struct {
-		size_t len;
-		char c_str[40];
-	} host;
-	struct {
-		size_t len;
-		char c_str[10];
-	} port;
-};
-
 int must_open_server_socket(int socktype, const char *host, int port);
 int open_server_socket(int socktype, const char *host, int port);
 int open_client_socket(int socktype, const char *host, int port);
 
-int print_sockaddr(struct sockaddr_string *s, const struct sockaddr *sa, size_t sasz);
+typedef struct stack_string stack_string;
+struct stack_string {
+	size_t len;
+	char c_str[128];
+};
+
+const char *sockaddr_string(stack_string *s, const struct sockaddr *sa, socklen_t sasz);
+const char *syserr_string(stack_string *s);
 
 

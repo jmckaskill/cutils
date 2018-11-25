@@ -105,14 +105,45 @@ int open_client_socket(int socktype, const char *host, int port) {
 	return rp ? fd : -1;
 }
 
-int print_sockaddr(struct sockaddr_string *s, const struct sockaddr *sa, size_t sasz) {
-	if (getnameinfo(sa, (socklen_t)sasz, s->host.c_str, sizeof(s->host.c_str), s->port.c_str, sizeof(s->port.c_str), NI_NUMERICHOST | NI_NUMERICSERV)) {
-		ca_setlen(&s->host, 0);
-		ca_setlen(&s->port, 0);
-		return -1;
+const char *sockaddr_string(stack_string *s, const struct sockaddr *sa, socklen_t sasz) {
+	char host[64], port[16];
+	if (getnameinfo(sa, sasz, host, sizeof(host), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV)) {
+		return "INVALID ADDRESS";
 	}
-	ca_setlen(&s->host, strlen(s->host.c_str));
-	ca_setlen(&s->port, strlen(s->port.c_str));
-	return 0;
+	if (sa->sa_family == AF_INET6) {
+		ca_setf(s, "[%s]:%s", host, port);
+	} else {
+		ca_setf(s, "%s:%s", host, port);
+	}
+	return s->c_str;
+}
+
+const char *syserr_string(stack_string *s) {
+#ifdef WIN32
+	DWORD err = WSAGetLastError();
+	wchar_t wbuf[512];
+	FormatMessageW(
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		err,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		wbuf, 511, NULL);
+	wbuf[511] = L'\0';
+	wchar_t* end = wbuf + wcslen(wbuf);
+	if (end[-1] == L'\n') {
+		end--;
+	}
+	if (end[-1] == L'\r') {
+		end--;
+	}
+	*end = L'\0';
+	ca_setf(s, "%d: ", err);
+	s->len += (size_t)WideCharToMultiByte(CP_ACP, 0, wbuf, -1, s->c_str + s->len, (int)(sizeof(s->c_str) - s->len - 1), 0, NULL);
+	s->c_str[s->len] = 0;
+	return s->c_str;
+#else
+	return strerror(errno);
+#endif
 }
 
