@@ -59,7 +59,7 @@ int str_vaddf(str_t *s, const char *fmt, va_list ap) {
         buf[bufsz] = '\0';
         int ret = vsnprintf(buf, bufsz + 1, fmt, aq);
 
-        if (ret > bufsz) {
+        if (ret > (int)bufsz) {
             // snprintf has told us the size of buffer required (ISO C99
             // behavior)
             str_grow(s, s->len + ret);
