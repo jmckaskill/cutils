@@ -39,7 +39,7 @@ static void log_node(log_t *log, rbnode *n, int depth) {
 }
 
 static void log_tree(log_t *log, const rbtree *tree) {
-	LOG(log, "log tree %d", tree->size);
+	LOG(log, "log tree %d", (int)tree->size);
 	if (tree->root) {
 		log_node(log, tree->root, 0);
 	}
