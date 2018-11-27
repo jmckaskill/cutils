@@ -292,11 +292,11 @@ void rb_remove(rbtree *tree, rbnode *n) {
 	}
 }
 
-rbnode *rb_begin(rbtree *tree, rbdirection dir) {
+rbnode *rb_begin(const rbtree *tree, rbdirection dir) {
 	return tree->root ? end(tree->root, dir) : NULL;
 }
 
-rbnode *rb_next(rbnode *n, rbdirection dir) {
+rbnode *rb_next(const rbnode *n, rbdirection dir) {
 	rbnode *c = n->child[dir];
 	if (c) {
 		return end(c, !dir);

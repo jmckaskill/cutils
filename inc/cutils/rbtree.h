@@ -22,14 +22,14 @@ struct rbtree {
 
 
 #define RB_INIT {NULL, 0}
-static inline rbnode *rb_parent(rbnode *n) {return (rbnode *) (n->parent_color &~ (uintptr_t)1);}
-static inline rbnode *rb_child(rbnode *n, rbdirection dir) {return n->child[dir];}
+static inline rbnode *rb_parent(const rbnode *n) {return (rbnode *) (n->parent_color &~ (uintptr_t)1);}
+static inline rbnode *rb_child(const rbnode *n, rbdirection dir) {return n->child[dir];}
 
 void rb_insert(rbtree *tree, rbnode *parent, rbnode *node, rbdirection dir);
 void rb_remove(rbtree *tree, rbnode *n);
 
-rbnode *rb_begin(rbtree *tree, rbdirection dir);
-rbnode *rb_next(rbnode *node, rbdirection dir);
+rbnode *rb_begin(const rbtree *tree, rbdirection dir);
+rbnode *rb_next(const rbnode *node, rbdirection dir);
 
 #ifndef container_of
 #define container_of(ptr, type, member) ((type*) ((char*) (ptr) - offsetof(type, member)))
