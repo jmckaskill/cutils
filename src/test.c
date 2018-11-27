@@ -2,6 +2,7 @@
 #include "cutils/flag.h"
 #include "cutils/str.h"
 #include "cutils/log.h"
+#include <cutils/timer.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -20,50 +21,7 @@ static const char *output_fn;
 static str_t slog = STR_INIT;
 static int error_count;
 static const char *test_name;
-
-#if defined WIN32
-static LARGE_INTEGER start_time;
-#elif defined __MACH__
-#include <mach/mach_time.h>
-static uint64_t start_time;
-#else
-#include <sys/time.h>
-static struct timespec start_time;
-#endif
-
-static void record_start_time() {
-#ifdef WIN32
-	QueryPerformanceCounter(&start_time);
-#elif defined __MACH__
-	start_time = mach_absolute_time();
-#else
-	clock_gettime(CLOCK_MONOTONIC, &start_time);
-#endif
-}
-
-static float calc_time_span_ms() {
-#ifdef WIN32
-	LARGE_INTEGER end_time, freq;
-	QueryPerformanceCounter(&end_time);
-	QueryPerformanceFrequency(&freq);
-	uint64_t span = end_time.QuadPart - start_time.QuadPart;
-	float sec = (float)span / (float)freq.QuadPart;
-	return sec * 1000.0f;
-#elif defined __MACH__
-	uint64_t end_time = mach_absolute_time();
-	uint64_t span = end_time - start_time;
-	mach_timebase_info_data_t base;
-	mach_timebase_info(&base);
-	float ns = ((float)span * base.numer) / base.denom;
-	return ns / 1000000.0f;
-#else
-	struct timespec end_time;
-	clock_gettime(CLOCK_MONOTONIC, &end_time);
-	end_time.tv_sec -= start_time.tv_sec;
-	end_time.tv_nsec -= start_time.tv_nsec;
-	return (float) end_time.tv_sec + (end_time.tv_nsec / 1000000.0f);
-#endif
-}
+static struct timer start_time;
 
 static int do_log(log_t *l, const char *fmt, ...) {
 	va_list ap;
@@ -118,14 +76,13 @@ log_t *start_test(int argc, const char *argv[]) {
 		alarm(1);
 	}
 #endif
-	record_start_time();
 	str_clear(&slog);
+	start_timer(&start_time);
 	return &test_logger;
 }
 
 int finish_test() {
-	float span = calc_time_span_ms();
-	LOG(&test_logger, "test finished|test:%s|timeMillis:%g", test_name, span);
+	LOG(&test_logger, "test finished|test:%s|timeMillis:%g", test_name, stop_timer(&start_time) * 1e3);
 	if (output_fn) {
 		FILE *f = fopen(output_fn, "wb");
 		if (f) {

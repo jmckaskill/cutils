@@ -2,26 +2,29 @@
 #include "cutils/timer.h"
 #include <stdint.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <inttypes.h>
+
+// computes (a * mul) / div using a 96 bit intermediate
+static uint64_t muldiv64(uint32_t alo, uint32_t ahi, uint32_t mul, uint64_t div) {
+	uint64_t plo = (uint64_t)alo * mul;
+	uint64_t phi = (uint64_t)ahi * mul;
+	phi += plo >> 32;
+	plo &= ~UINT32_C(0);
+	uint64_t dhi = phi / div;
+	uint64_t rhi = phi % div;
+	uint64_t dlo = ((rhi << 32) + plo) / div;
+	return (dhi << 32) | (dlo & ~UINT32_C(0));
+}
 
 #ifdef WIN32
 #include <windows.h>
 
-void start_timer(struct timer *t) {
-	LARGE_INTEGER li;
-	QueryPerformanceCounter(&li);
-	t->a = li.QuadPart;
-}
-double stop_timer(struct timer *t) {
-	LARGE_INTEGER stop_time;
-	QueryPerformanceCounter(&stop_time);
-	uint64_t delta = stop_time.QuadPart - t->a;
-	LARGE_INTEGER freq;
-	QueryPerformanceFrequency(&freq);
-	return (double)delta / (double)freq.QuadPart;
-}
 uint64_t monotonic_ns(void) {
-	uint64_t ms = GetTickCount64();
-	return ms * 1000 * 1000;
+	LARGE_INTEGER freq, count;
+	QueryPerformanceFrequency(&freq);
+	QueryPerformanceCounter(&count);
+	return muldiv64(count.LowPart, count.HighPart, 1000 * 1000 * 1000, freq.QuadPart);
 }
 
 uint64_t utc_us(void) {
@@ -37,15 +40,6 @@ uint64_t utc_us(void) {
 #include <time.h>
 #include <sys/time.h>
 
-void start_timer(struct timer *t) {
-	t->a = monotonic_ns();
-}
-
-double stop_timer(struct timer *t) {
-	uint64_t delta = monotonic_ns() - t->a;
-	return (double)delta / 1e9;
-}
-
 uint64_t monotonic_ns(void) {
 	struct timespec tv;
 	clock_gettime(CLOCK_MONOTONIC, &tv);
@@ -57,29 +51,12 @@ uint64_t monotonic_ns(void) {
 #include <sys/time.h>
 #include <time.h>
 
-static mach_timebase_info_data_t g_timebase_info;
-
-void start_timer(struct timer *t) {
-	t->a = mach_absolute_time();
-}
-
-double stop_timer(struct timer *t) {
-	uint64_t end = mach_absolute_time();
-	if (g_timebase_info.denom == 0) {
-		mach_timebase_info(&g_timebase_info);
-	}
-	uint64_t delta = end - t->a;
-	return (double) delta * g_timebase_info.numer / (double) g_timebase_info.denom / 1e9;
-}
 uint64_t monotonic_ns(void) {
+	struct mach_timebase_info_data_t timebase;
+	mach_timebase_info(&timebase);
 	uint64_t ticks = mach_absolute_time();
-	if (g_timebase_info.denom == 0) {
-		mach_timebase_info(&g_timebase_info);
-	}
-	double ns = ((double)ticks * g_timebase_info.numer) / g_timebase_info.denom;
-	return (uint64_t)ns;
+	return muldiv64((uint32_t)ticks, (uint32_t)(ticks >> 32), timebase.numer, timebase.denom);
 }
-
 
 #else
 #error
@@ -94,10 +71,4 @@ uint64_t utc_us(void) {
 	return sec + us;
 }
 #endif
-
-double restart_timer(struct timer *t) {
-	double ret = stop_timer(t);
-	start_timer(t);
-	return ret;
-}
 
