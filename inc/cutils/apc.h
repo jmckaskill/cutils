@@ -35,7 +35,6 @@ void cancel_apc(dispatcher_t *s, apc_t *w);
 void move_apc(dispatcher_t *od, dispatcher_t *nd, apc_t *a);
 static inline bool is_apc_active(apc_t *a) {return a->fn != NULL;}
 
-void init_dispatcher(dispatcher_t *set);
 int dispatch_apcs(dispatcher_t *set, tick_t now, int timeout_divisor);
 
 

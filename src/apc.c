@@ -7,7 +7,7 @@ static int compare_stopwatch(const struct heap_node *a, const struct heap_node *
 	return diff < 0;
 }
 
-void init_dispatcher(dispatcher_t *s) {
+static void init_dispatcher(dispatcher_t *s) {
 	heap_init(&s->h, &compare_stopwatch);
 	s->apcs.left = &s->apcs;
 	s->apcs.right = &s->apcs;
@@ -15,6 +15,9 @@ void init_dispatcher(dispatcher_t *s) {
 }
 
 int dispatch_apcs(dispatcher_t *s, tick_t now, int divisor) {
+	if (!s->h.before) {
+		init_dispatcher(s);
+	}
 	while (s->apcs.left != &s->apcs) {
 		apc_t *w = container_of(s->apcs.left, apc_t, hn);
 		s->dispatching = w;
@@ -42,6 +45,9 @@ int dispatch_apcs(dispatcher_t *s, tick_t now, int divisor) {
 }
 
 void add_apc(dispatcher_t *d, apc_t *a, wakeup_fn fn) {
+	if (!d->h.before) {
+		init_dispatcher(d);
+	}
 	if (d->dispatching == a) {
 		d->dispatching = NULL;
 	}
@@ -58,6 +64,9 @@ void add_apc(dispatcher_t *d, apc_t *a, wakeup_fn fn) {
 }
 
 void add_timed_apc(dispatcher_t *d, apc_t *a, tick_t wakeup, wakeup_fn fn) {
+	if (!d->h.before) {
+		init_dispatcher(d);
+	}
 	if (a->fn && (a->hn.parent || d->h.head == &a->hn) && (tickdiff_t)(wakeup - a->wakeup) >= 0) {
 		if (d->dispatching == a) {
 			d->dispatching = NULL;
@@ -73,6 +82,12 @@ void add_timed_apc(dispatcher_t *d, apc_t *a, tick_t wakeup, wakeup_fn fn) {
 }
 
 void move_apc(dispatcher_t *od, dispatcher_t *nd, apc_t *a) {
+	if (!od->h.before) {
+		return;
+	}
+	if (!nd->h.before) {
+		init_dispatcher(nd);
+	}
 	if (od->dispatching == a) {
 		nd->dispatching = NULL;
 	}
@@ -91,6 +106,9 @@ void move_apc(dispatcher_t *od, dispatcher_t *nd, apc_t *a) {
 
 void cancel_apc(dispatcher_t *d, apc_t *a) {
 	if (a->fn != NULL) {
+		if (!d->h.before) {
+			init_dispatcher(d);
+		}
 		if (d->dispatching == a) {
 			d->dispatching = NULL;
 		}
