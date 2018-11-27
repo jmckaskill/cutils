@@ -52,7 +52,7 @@ uint64_t monotonic_ns(void) {
 #include <time.h>
 
 uint64_t monotonic_ns(void) {
-	struct mach_timebase_info_data_t timebase;
+	struct mach_timebase_info timebase;
 	mach_timebase_info(&timebase);
 	uint64_t ticks = mach_absolute_time();
 	return muldiv64((uint32_t)ticks, (uint32_t)(ticks >> 32), timebase.numer, timebase.denom);
