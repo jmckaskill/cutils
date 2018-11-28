@@ -51,9 +51,8 @@ void add_apc(dispatcher_t *d, apc_t *a, wakeup_fn fn) {
 	if (d->dispatching == a) {
 		d->dispatching = NULL;
 	}
-	if (a->hn.parent || d->h.head == &a->hn) {
+	if (a->hn.parent || d->h.head == &a->hn || !a->hn.left) {
 		heap_remove(&d->h, &a->hn);
-	} else if (!a->hn.left) {
 		a->hn.right = &d->apcs;
 		a->hn.left = d->apcs.left;
 		a->hn.left->right = &a->hn;
