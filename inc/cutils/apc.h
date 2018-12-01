@@ -19,8 +19,8 @@ typedef void(*wakeup_fn)(apc_t *s, tick_t now);
 
 struct dispatcher {
 	struct heap h;
-	struct heap_node apcs;
 	apc_t *dispatching;
+	tick_t last_tick;
 };
 
 struct apc {
@@ -29,6 +29,7 @@ struct apc {
 	tick_t wakeup;
 };
 
+void init_dispatcher(dispatcher_t *s, tick_t now);
 void add_apc(dispatcher_t *s, apc_t *w, wakeup_fn fn);
 void add_timed_apc(dispatcher_t *s, apc_t *w, tick_t wakeup, wakeup_fn fn);
 void cancel_apc(dispatcher_t *s, apc_t *w);
