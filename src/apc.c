@@ -16,6 +16,7 @@ void init_dispatcher(dispatcher_t *s, tick_t now) {
 
 int dispatch_apcs(dispatcher_t *s, tick_t now, int divisor) {
 	assert(s->h.before);
+	s->last_tick = now;
 	while (s->h.head) {
 		apc_t *w = container_of(s->h.head, apc_t, hn);
 		tick_t wakeup = w->wakeup;
