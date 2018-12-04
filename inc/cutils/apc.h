@@ -15,11 +15,10 @@ typedef uint32_t tick_t;
 typedef int32_t tickdiff_t;
 typedef struct apc apc_t;
 typedef struct dispatcher dispatcher_t;
-typedef void(*wakeup_fn)(apc_t *s, tick_t now);
+typedef void(*wakeup_fn)(apc_t *a, tick_t now);
 
 struct dispatcher {
 	struct heap h;
-	apc_t *dispatching;
 	tick_t last_tick;
 };
 
@@ -29,14 +28,14 @@ struct apc {
 	tick_t wakeup;
 };
 
-void init_dispatcher(dispatcher_t *s, tick_t now);
-void add_apc(dispatcher_t *s, apc_t *w, wakeup_fn fn);
-void add_timed_apc(dispatcher_t *s, apc_t *w, tick_t wakeup, wakeup_fn fn);
-void cancel_apc(dispatcher_t *s, apc_t *w);
+void init_dispatcher(dispatcher_t *d, tick_t now);
+void add_apc(dispatcher_t *d, apc_t *a, wakeup_fn fn);
+void add_timed_apc(dispatcher_t *d, apc_t *a, tick_t wakeup, wakeup_fn fn);
+void cancel_apc(dispatcher_t *d, apc_t *a);
 void move_apc(dispatcher_t *od, dispatcher_t *nd, apc_t *a);
 static inline bool is_apc_active(apc_t *a) {return a->fn != NULL;}
 
-int dispatch_apcs(dispatcher_t *set, tick_t now, int timeout_divisor);
+int dispatch_apcs(dispatcher_t *d, tick_t now, tickdiff_t sleep_granularity);
 
 
 

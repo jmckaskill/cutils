@@ -1,7 +1,7 @@
 #include <cutils/apc.h>
 #include <assert.h>
 
-static int compare_stopwatch(const struct heap_node *a, const struct heap_node *b) {
+static int compare_apc(const struct heap_node *a, const struct heap_node *b) {
 	const apc_t *sa = container_of(a, struct apc, hn);
 	const apc_t *sb = container_of(b, struct apc, hn);
 	tickdiff_t diff = (tickdiff_t)(sa->wakeup - sb->wakeup);
@@ -9,25 +9,28 @@ static int compare_stopwatch(const struct heap_node *a, const struct heap_node *
 }
 
 void init_dispatcher(dispatcher_t *s, tick_t now) {
-	heap_init(&s->h, &compare_stopwatch);
-	s->dispatching = NULL;
+	heap_init(&s->h, &compare_apc);
 	s->last_tick = now;
 }
 
-int dispatch_apcs(dispatcher_t *s, tick_t now, int divisor) {
-	assert(s->h.before);
-	s->last_tick = now;
-	while (s->h.head) {
-		apc_t *w = container_of(s->h.head, apc_t, hn);
-		tick_t wakeup = w->wakeup;
-		tickdiff_t d = (tickdiff_t)(wakeup - now);
-		if (d > 0) {
-			return (d + divisor - 1) / divisor;
+int dispatch_apcs(dispatcher_t *d, tick_t now, tickdiff_t sleep_granularity) {
+	assert(d->h.before);
+	d->last_tick = now;
+	while (d->h.head) {
+		apc_t *a = container_of(d->h.head, apc_t, hn);
+		tick_t wakeup = a->wakeup;
+		tickdiff_t t = (tickdiff_t)(wakeup - now);
+		if (t > sleep_granularity/2) {
+			return (t + (sleep_granularity/2)) / sleep_granularity;
 		}
-		s->dispatching = w;
-		w->fn(w, now);
-		if (s->dispatching == w) {
-			cancel_apc(s, w);
+		// Cancel the apc, but don't remove from the heap yet
+		// This allows add_timed_apc to be efficient if called
+		// from the callback which is very common for periodic timers;
+		wakeup_fn fn = a->fn;
+		a->fn = NULL;
+		fn(a, now);
+		if (a->fn == NULL) {
+			heap_remove(&d->h, &a->hn);
 		}
 	}
 	return -1;
@@ -38,16 +41,18 @@ void add_apc(dispatcher_t *d, apc_t *a, wakeup_fn fn) {
 }
 
 void add_timed_apc(dispatcher_t *d, apc_t *a, tick_t wakeup, wakeup_fn fn) {
-	assert(d->h.before);
-	if (d->dispatching == a) {
-		d->dispatching = NULL;
-	}
-	if (a->fn && (tickdiff_t)(wakeup - a->wakeup) >= 0) {
-		a->wakeup = wakeup;
+	assert(d->h.before && fn != NULL);
+	tickdiff_t diff = (tickdiff_t)(wakeup - a->wakeup);
+	a->wakeup = wakeup;
+	if (!a->hn.parent && d->h.head != &a->hn) {
+		// apc is not in the heap
+		heap_insert(&d->h, &a->hn);
+	} else if (diff > 0) {
+		// apc is in the heap and can be pushed back
 		heap_update(&d->h, &a->hn);
-	} else {
+	} else if (diff < 0) {
+		// apc is in the heap but must be pulled forward
 		heap_remove(&d->h, &a->hn);
-		a->wakeup = wakeup;
 		heap_insert(&d->h, &a->hn);
 	}
 	a->fn = fn;
@@ -55,18 +60,14 @@ void add_timed_apc(dispatcher_t *d, apc_t *a, tick_t wakeup, wakeup_fn fn) {
 
 void move_apc(dispatcher_t *od, dispatcher_t *nd, apc_t *a) {
 	assert(od->h.before && nd->h.before);
-	if (od->dispatching == a) {
-		nd->dispatching = NULL;
-	}
 	heap_remove(&od->h, &a->hn);
-	heap_insert(&nd->h, &a->hn);
+	if (is_apc_active(a)) {
+		heap_insert(&nd->h, &a->hn);
+	}
 }
 
 void cancel_apc(dispatcher_t *d, apc_t *a) {
 	if (a->fn != NULL) {
-		if (d->dispatching == a) {
-			d->dispatching = NULL;
-		}
 		heap_remove(&d->h, &a->hn);
 		a->fn = NULL;
 	}
