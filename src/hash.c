@@ -258,7 +258,7 @@ int resize_hash(hash_t *h, size_t keysz, size_t valsz, size_t newsz) {
 	}
 }
 
-size_t insert_hash(hash_t *h, size_t keysz, size_t valsz, int *padded, uint64_t key, const void *blob) {
+size_t insert_hash(hash_t *h, size_t keysz, size_t valsz, bool *padded, uint64_t key, const void *blob) {
 	struct table *t = (struct table*)h;
 	if (h->size >= h->end * 3 / 4) {
 		// grow the table
@@ -286,7 +286,7 @@ size_t insert_hash(hash_t *h, size_t keysz, size_t valsz, int *padded, uint64_t 
 			}
 			goto add_entry;
 		} else if ((flags & USED) && key_equals(keysz, t->keys, hash, key, blob)) {
-			*padded = 0;
+			*padded = false;
 			return hash;
 		} else if (flags == REMOVED) {
 			site = hash;
@@ -301,7 +301,7 @@ add_entry:
 	set_key(keysz, t->keys, site, key, blob);
 	set_used(h->flags, site);
 	h->size++;
-	*padded = 1;
+	*padded = true;
 	return site;
 }
 

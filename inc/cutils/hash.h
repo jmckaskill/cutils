@@ -1,6 +1,28 @@
 #pragma once
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
+
+// hash tables are created as types of the form
+// struct {
+//		hash_t h;
+//		key_type *keys;
+//		value_type *values;
+//	}
+//
+// key_type can be one of
+// 1. 4B integer (int32_t, uint32_t, int, unsigned, size_t/uintptr_t)
+// 2. 8B integer (int64_t, uint64_t, size_t/uintptr_t)
+//    floats and doubles will work but interpreted as integer
+//    any other 4/8B structure will also work as long as it
+//    doesn't contain any padding
+// 3. blob_t
+//    This allows a pointer to a variable sized key
+//
+// value_type can be any type
+//
+// If the key is a blob, use the BLOB versions. Otherwise use
+// the normal macros.
 
 typedef struct allocator allocator_t;
 typedef struct hash_table hash_t;
@@ -26,7 +48,7 @@ size_t hash_memory(const hash_t *h, size_t keysz, size_t valsz);
 void remove_hash(hash_t *h, size_t idx);
 int resize_hash(hash_t *h, size_t keysz, size_t valsz, size_t newsz);
 size_t find_hash(hash_t *h, size_t keysz, uint64_t key, const void *blob);
-size_t insert_hash(hash_t *h, size_t keysz, size_t valsz, int *padded, uint64_t key, const void *blob);
+size_t insert_hash(hash_t *h, size_t keysz, size_t valsz, bool *padded, uint64_t key, const void *blob);
 int next_hash(hash_t *h, size_t *pidx);
 
 #define CLEAR_HASH(H) clear_hash(&(H)->h)

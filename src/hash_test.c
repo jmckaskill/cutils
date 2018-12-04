@@ -9,16 +9,16 @@ int main(int argc, const char *argv[]) {
 		uint32_t *keys;
 	} uu = { 0 };
 
-	int added;
+	bool added;
 	size_t ii = INSERT_SET(&uu, 3, &added);
 	EXPECT_GT(uu.h.end, ii);
-	EXPECT_EQ(1, added);
+	EXPECT_TRUE(added);
 	EXPECT_EQ(1, uu.h.size);
 	EXPECT_EQ(ii, FIND_SET(&uu, 3));
 
 	for (uint32_t key = 16; key < 32; key++) {
 		INSERT_SET(&uu, key, &added);
-		EXPECT_EQ(1, added);
+		EXPECT_TRUE(added);
 	}
 
 	EXPECT_GT(uu.h.end, FIND_SET(&uu, 3));
