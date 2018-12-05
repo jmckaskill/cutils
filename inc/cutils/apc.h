@@ -19,6 +19,7 @@ typedef void(*wakeup_fn)(apc_t *a, tick_t now);
 
 struct dispatcher {
 	struct heap h;
+	apc_t *dispatching;
 	tick_t last_tick;
 };
 

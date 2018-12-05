@@ -8,13 +8,15 @@ static int compare_apc(const struct heap_node *a, const struct heap_node *b) {
 	return diff < 0;
 }
 
-void init_dispatcher(dispatcher_t *s, tick_t now) {
-	heap_init(&s->h, &compare_apc);
-	s->last_tick = now;
+void init_dispatcher(dispatcher_t *d, tick_t now) {
+	heap_init(&d->h, &compare_apc);
+	d->dispatching = NULL;
+	d->last_tick = now;
 }
 
 int dispatch_apcs(dispatcher_t *d, tick_t now, tickdiff_t sleep_granularity) {
 	assert(d->h.before);
+	assert(!d->dispatching);
 	d->last_tick = now;
 	while (d->h.head) {
 		apc_t *a = container_of(d->h.head, apc_t, hn);
@@ -28,8 +30,11 @@ int dispatch_apcs(dispatcher_t *d, tick_t now, tickdiff_t sleep_granularity) {
 		// from the callback which is very common for periodic timers;
 		wakeup_fn fn = a->fn;
 		a->fn = NULL;
+		d->dispatching = a;
 		fn(a, now);
-		if (a->fn == NULL) {
+		a = d->dispatching;
+		d->dispatching = NULL;
+		if (a && a->fn == NULL) {
 			heap_remove(&d->h, &a->hn);
 		}
 	}
@@ -67,10 +72,11 @@ void move_apc(dispatcher_t *od, dispatcher_t *nd, apc_t *a) {
 }
 
 void cancel_apc(dispatcher_t *d, apc_t *a) {
-	if (a->fn != NULL) {
-		heap_remove(&d->h, &a->hn);
-		a->fn = NULL;
+	if (d->dispatching == a) {
+		d->dispatching = NULL;
 	}
+	heap_remove(&d->h, &a->hn);
+	a->fn = NULL;
 }
 
 
