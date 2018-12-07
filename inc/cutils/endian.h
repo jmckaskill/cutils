@@ -331,3 +331,50 @@ static inline void *write_big_double(void *p, double f) {
 	u.d = f;
 	return write_big_64(p, u.u);
 }
+
+// clzl = count leading zeros (long)
+// These versions do not protect against a zero value
+#if defined __GNUC__
+static inline unsigned clzl(uint64_t v) {
+#if defined __amd64__
+	return __builtin_clzl(v);
+#else
+	uint32_t lo = (uint32_t)v;
+	uint32_t hi = (uint32_t)(v >> 32);
+	return hi ? __builtin_clz(hi) : (32 + __builtin_clz(lo));
+#endif
+}
+#elif defined _MSC_VER
+#include <intrin.h>
+#if defined _M_X64
+#pragma intrinsic(_BitScanReverse64)
+static inline unsigned clzl(uint64_t v) {
+	unsigned long ret;
+	_BitScanReverse64(&ret, v);
+	return 63 - ret;
+}
+#else
+#pragma intrinsic(_BitScanReverse)
+static inline unsigned clzl(uint64_t v) {
+	unsigned long ret;
+	if (_BitScanReverse(&ret, (uint32_t)(v >> 32))) {
+		return 31 - ret;
+	} else {
+		_BitScanReverse(&ret, (uint32_t)(v));
+		return 63 - ret;
+	}
+}
+#endif
+#else
+static inline unsigned clzl(uint64_t v) {
+	unsigned n = 0;
+	int64_t x = (int64_t)v;
+	while (!(x < 0)) {
+		n++;
+		x <<= 1;
+	}
+	return n;
+}
+#endif
+
+
