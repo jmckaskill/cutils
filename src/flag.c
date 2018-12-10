@@ -1,6 +1,7 @@
 #include "cutils/flag.h"
 #include "cutils/str.h"
 #include "cutils/utf.h"
+#include "cutils/path.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -202,7 +203,7 @@ static int process_flag(struct flag *f, const char *arg, const char *str_value, 
 		break;
 	case FLAG_PATH:
 		str_set(&f->pval->str, str_value);
-		str_clean_path(&f->pval->str);
+		clean_path(PATH_NATIVE, f->pval->str.c_str, &f->pval->str.len);
 		break;
 	}
 

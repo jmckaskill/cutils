@@ -11,13 +11,13 @@ struct str16 {
 };
 
 int append_windows_path(str16_t *s, const char *path);
-FILE *io_tmpfile(struct mt_rand *r);
-FILE *io_fopen(const char *u8path, const char *mode);
+FILE *mt_tmpfile(struct mt_rand *r);
+FILE *fopen_utf8(const char *u8path, const char *mode);
 
 typedef int(*scandir_cb)(void *user, const char *path);
-int io_scandir(const char *dir, scandir_cb cb, void *user);
+int scandir_utf8(const char *dir, scandir_cb cb, void *user);
 
-void io_mkdir(const char *dir);
+void mkdir_utf8(const char *dir);
 
 typedef struct mapped_file mapped_file;
 struct mapped_file {

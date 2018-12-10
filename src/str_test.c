@@ -1,11 +1,14 @@
 #include "cutils/str.h"
 #include "cutils/test.h"
+#include "cutils/path.h"
 
-static void test_path(const char *in, const char *out) {
+static void test_path(enum path_type type, const char *in, const char *out) {
+	bool same = !strcmp(in, out);
 	str_t s = STR_INIT;
 	str_set(&s, in);
-	str_clean_path(&s);
+	EXPECT_EQ(same ? 0 : 1, clean_path(type, s.c_str, &s.len));
 	EXPECT_STREQ(out, s.c_str);
+	EXPECT_EQ(s.len, strlen(out));
 	str_destroy(&s);
 }
 
@@ -21,28 +24,30 @@ int main(int argc, const char *argv[]) {
 	str_replace_all(&s, "abcde", "ghijk");
 	EXPECT_STREQ("ghijk a ghijk a", s.c_str);
 
-	test_path("/../foo", "/foo");
-	test_path("../foo", "../foo");
-	test_path("a/b/c/../../foo", "a/foo");
-	test_path("../../foo", "../../foo");
-	test_path("/../../../foo", "/foo");
-	test_path("/foo/../foo", "/foo");
-	test_path("/./foo", "/foo");
-	test_path("/foo/.", "/foo/");
-	test_path("/foo/./", "/foo/");
-	test_path("//foo//./", "/foo/");
-	test_path("../foo/.", "../foo/");
-	test_path(".", "./");
-	test_path("./", "./");
-	test_path("/", "/");
-	test_path("../", "../");
-	test_path("..", "../");
-#ifdef WIN32
-	test_path("C:\\", "C:/");
-	test_path("C:\\foo\\", "C:/foo/");
-	test_path("C:\\..\\foo", "C:/foo");
-	test_path("C:\\..\\foo\\.", "C:/foo/");
-#endif
+	test_path(PATH_UNIX, "/../foo", "/foo");
+	test_path(PATH_UNIX, "../foo", "../foo");
+	test_path(PATH_UNIX, "a/b/c/../../foo", "a/foo");
+	test_path(PATH_UNIX, "../../foo", "../../foo");
+	test_path(PATH_UNIX, "/../../../foo", "/foo");
+	test_path(PATH_UNIX, "/foo/../foo", "/foo");
+	test_path(PATH_UNIX, "/./foo", "/foo");
+	test_path(PATH_UNIX, "/foo/.", "/foo/");
+	test_path(PATH_UNIX, "/foo/./", "/foo/");
+	test_path(PATH_UNIX, "//foo//./", "/foo/");
+	test_path(PATH_UNIX, "../foo/.", "../foo/");
+	test_path(PATH_UNIX, "foo/../", ".");
+	test_path(PATH_UNIX, "", "");
+	test_path(PATH_UNIX, ".", ".");
+	test_path(PATH_UNIX, "./", ".");
+	test_path(PATH_UNIX, "/", "/");
+	test_path(PATH_UNIX, "..", "..");
+	test_path(PATH_UNIX, "../", "..");
+	test_path(PATH_UNIX, "../../", "../..");
+	test_path(PATH_UNIX, "../..", "../..");
+	test_path(PATH_WINDOWS, "C:\\", "C:/");
+	test_path(PATH_WINDOWS, "C:\\foo\\", "C:/foo/");
+	test_path(PATH_WINDOWS, "C:\\..\\foo", "C:/foo");
+	test_path(PATH_WINDOWS, "C:\\..\\foo\\.", "C:/foo/");
 
 	EXPECT_STREQ("bar/", path_last_segment("foo/bar/"));
 	EXPECT_STREQ("foo", path_last_segment("foo"));

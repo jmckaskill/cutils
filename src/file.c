@@ -39,7 +39,7 @@ int append_windows_path(str16_t *s, const char *path) {
 }
 
 #ifdef WIN32
-FILE *io_tmpfile(struct mt_rand *r) {
+FILE *mt_tmpfile(struct mt_rand *r) {
 	// The default windows implementation of tmpfile is stupid. It puts files in C:/
 	// Therefore we supply our own version
 	str_t path = STR_INIT;
@@ -64,14 +64,14 @@ err:
 	return NULL;
 }
 #else
-FILE *io_tmpfile(struct mt_rand *r) {
+FILE *mt_tmpfile(struct mt_rand *r) {
 	(void)r;
 	return tmpfile();
 }
 #endif
 
 
-FILE *io_fopen(const char *path, const char *mode) {
+FILE *fopen_utf8(const char *path, const char *mode) {
 #ifdef WIN32
 	str16_t wpath = { 0 };
 	str16_t wmode = { 0 };
@@ -88,7 +88,7 @@ FILE *io_fopen(const char *path, const char *mode) {
 }
 
 #ifdef WIN32
-int io_scandir(const char *dir, scandir_cb cb, void *user) {
+int scandir_utf8(const char *dir, scandir_cb cb, void *user) {
 	str_t s = STR_INIT;
 	str16_t w = { 0 };
 	HANDLE h = INVALID_HANDLE_VALUE;
@@ -131,7 +131,7 @@ end:
 	FindClose(h);
 	return ret;
 }
-void io_mkdir(const char *dir) {
+void mkdir_utf8(const char *dir) {
 	str16_t w = { 0 };
 	if (append_windows_path(&w, dir)) {
 		return;
@@ -146,7 +146,7 @@ void io_mkdir(const char *dir) {
 	free(w.v);
 }
 #else
-void io_mkdir(const char *dir) {
+void mkdir_utf8(const char *dir) {
 	str_t s = STR_INIT;
 	str_set(&s, dir);
 	for (size_t i = 1; i < s.len; i++) {
@@ -158,7 +158,7 @@ void io_mkdir(const char *dir) {
 	}
 	str_destroy(&s);
 }
-int io_scandir(const char *dir, scandir_cb cb, void *user) {
+int scandir_utf8(const char *dir, scandir_cb cb, void *user) {
 	DIR *d = opendir(dir);
 	if (!d) {
 		return -1;

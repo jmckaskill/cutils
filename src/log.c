@@ -60,7 +60,7 @@ log_t stdout_log = { &do_log };
 
 static int do_file_log(log_t *log, const char *fmt, ...) {
 	struct file_logger *fl = (struct file_logger*) log;
-	FILE *f = io_fopen(fl->path, "a");
+	FILE *f = fopen_utf8(fl->path, "a");
 	if (f) {
 		struct {
 			size_t len;
