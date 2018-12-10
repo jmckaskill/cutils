@@ -378,3 +378,29 @@ static inline unsigned clzl(uint64_t v) {
 #endif
 
 
+// ctz = count trailing zeros
+// These versions do not protect against a zero value.
+#if defined __GNUC__
+static inline uint8_t ctz(uint32_t v) {
+	return (uint8_t)__builtin_ctz(v);
+}
+#elif defined _MSC_VER
+#include <intrin.h>
+#pragma intrinsic(_BitScanForward)
+static inline uint8_t ctz(uint32_t v) {
+	unsigned long ret;
+	_BitScanForward(&ret, v);
+	return (uint8_t)ret;
+}
+#else
+static inline uint8_t ctz(uint32_t v) {
+	uint8_t n = 0;
+	while (!(v & 1)) {
+		n++;
+		v >>= 1;
+	}
+	return n;
+}
+#endif
+
+
