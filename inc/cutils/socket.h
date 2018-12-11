@@ -1,12 +1,19 @@
 #pragma once
 
 #ifdef WIN32
+#define _WIN32_WINNT 0x600
+#include <basetsd.h>
 #include <winsock2.h>
 #include <WS2tcpip.h>
-typedef WSAPOLLFD pollfd;
-#define poll WSAPoll
 #pragma comment(lib,"ws2_32")
+typedef WSAPOLLFD pollfd;
+static int poll(_Inout_ LPWSAPOLLFD fdArray, _In_ ULONG fds, _In_ INT timeout) {
+	return WSAPoll(fdArray, fds, timeout);
+}
 #define SHUT_WR SD_SEND
+typedef SSIZE_T ssize_t;
+#define SSIZE_T_MIN MINSSIZE_T
+#define SSIZE_T_MAX MAXSSIZE_T
 #else
 #include <poll.h>
 #include <sys/socket.h>
@@ -46,6 +53,14 @@ static inline int set_non_blocking(int fd) {
 #endif
 }
 
+static inline int set_cloexec(int fd) {
+#ifdef WIN32
+	return 0;
+#else
+	return fcntl(fd, F_SETFD, O_CLOEXEC);
+#endif
+}
+
 static inline int set_ipv6_only(int fd, bool v6only) {
 	unsigned long val = v6only;
 	return setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&val, sizeof(val));
@@ -63,5 +78,3 @@ struct stack_string {
 
 const char *sockaddr_string(stack_string *s, const struct sockaddr *sa, socklen_t sasz);
 const char *syserr_string(stack_string *s);
-
-

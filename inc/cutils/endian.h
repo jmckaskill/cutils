@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#define ALIGN_DOWN(u, sz) ((u) &~ ((sz)-1))
+#define ALIGN_UP(u, sz) ALIGN_DOWN(type, (u) + (sz) - 1, (sz))
+
 #if defined _M_X64 || defined __amd64__ || defined __x86_64__ || defined __i386__ || defined _M_IX86 || defined __arm__ || defined __thumb__ || defined _M_ARM || defined __aarch64__
 #define NATIVE_LITTLE_ENDIAN
 #endif

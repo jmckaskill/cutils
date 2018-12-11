@@ -5,6 +5,8 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#define ARRAYSZ(A) (sizeof(A) / sizeof((A)[0]))
+
 #ifdef WIN32
 #define strncasecmp _strnicmp
 #define strcasecmp _stricmp
