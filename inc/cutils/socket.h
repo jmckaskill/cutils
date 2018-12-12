@@ -18,6 +18,7 @@ typedef SSIZE_T ssize_t;
 #include <poll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <errno.h>
@@ -57,7 +58,7 @@ static inline int set_cloexec(int fd) {
 #ifdef WIN32
 	return 0;
 #else
-	return fcntl(fd, F_SETFD, O_CLOEXEC);
+	return fcntl(fd, F_SETFD, FD_CLOEXEC);
 #endif
 }
 

@@ -48,7 +48,6 @@ build $obj/cutils/utf.o: cc $src/utf.c
 build $obj/cutils/log.o: cc $src/log.c
 build $obj/cutils/apc.o: cc $src/apc.c
 build $obj/cutils/path.o: cc $src/path.c
-build $obj/cutils/async/poll.o: cc $src/async/poll.c
 build $obj/cutils.lib: lib $
  $obj/cutils/socket.o $
  $obj/cutils/timer.o $
@@ -67,7 +66,6 @@ build $obj/cutils.lib: lib $
  $obj/cutils/log.o $
  $obj/cutils/apc.o $
  $obj/cutils/path.o $
- $obj/cutils/async/poll.o $
 
 
 build $obj/cutils/stream/filter-decode-xz.o: cc src/stream/filter-decode-xz.c
