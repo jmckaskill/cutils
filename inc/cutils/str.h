@@ -65,14 +65,14 @@ int str_vaddf(str_t *s, const char *fmt, va_list ap);
 #define str_addstr(P, STR) str_add2(P, (STR).c_str, (STR).len);
 
 static inline void str_add(str_t *s, const char *a) {
-	str_add2(s, a, (int) strlen(a));
+	str_add2(s, a, strlen(a));
 }
 static inline void str_set2(str_t *s, const char *a, size_t len) {
 	str_clear(s);
 	str_add2(s, a, len);
 }
 static inline void str_set(str_t *s, const char *a) {
-	str_set2(s, a, (int) strlen(a));
+	str_set2(s, a, strlen(a));
 }
 
 #define str_setstr(P, STR) str_set2(P, (STR).c_str, (STR).len)

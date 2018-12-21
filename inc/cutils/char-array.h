@@ -52,12 +52,12 @@ static inline void *memmem(const void *hay, size_t haysz, const void *needle, si
 typedef struct slice slice_t;
 
 struct slice {
-	size_t len;
 	const char *c_str;
+	size_t len;
 };
 
 // returns zero on success, non-zero on failure
-#define ca_setlen(P, SZ) 		(assert(sizeof((P)->c_str) != sizeof(char*)), (P)->len = (SZ), (P)->c_str[(P)->len] = '\0')
+#define ca_setlen(P, SZ) 		(assert(sizeof((P)->c_str) != sizeof(char*)), (P)->len = (SZ), assert((P)->len < sizeof((P)->c_str)), (P)->c_str[(P)->len] = '\0')
 #define ca_clear(P)             ca_setlen(P, 0)
 #define ca_set2(P, SRC, SRCSZ) 	(assert(sizeof((P)->c_str) != sizeof(char*)), ca_set2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (SRC), (SRCSZ)))
 #define ca_set(P, SRC) 			(assert(sizeof((P)->c_str) != sizeof(char*)), ca_set2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (SRC), strlen(SRC)))
