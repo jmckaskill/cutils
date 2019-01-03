@@ -25,6 +25,7 @@ typedef SSIZE_T ssize_t;
 #include <sys/types.h>
 #include <unistd.h>
 #define closesocket(fd) close(fd)
+typedef int SOCKET;
 #endif
 
 #include <stdbool.h>
